@@ -169,6 +169,121 @@ button:disabled { background: #444; cursor: wait; }
     </div>
 </div>
 
+<script>
+// Конфигурация OpenRouter
+const OPENROUTER_API_KEY = 'YOUR_OPENROUTER_API_KEY'; // Замените на ваш ключ
+const MODEL = 'google/gemma-2-27b-it:free';
+
+// Генерация уникального ID
+function generateId(name, dob, role) {
+    const hash = Array.from(name + dob).reduce((acc, char) => {
+        return ((acc << 5) - acc) + char.charCodeAt(0);
+    }, 0);
+    
+    let id = Math.abs(hash) % 100000;
+    
+    if (role === 'adult') {
+        id = Math.floor(id / 10) * 10 + 1;
+    } else {
+        id = (id < 10000) ? id + 10000 : id;
+    }
+    
+    return String(id).padStart(5, '0');
+}
+
+// Запрос к OpenRouter AI
+async function getAIAnalysis(name, dob, role, id) {
+    const prompt = `Ты анализируешь персонажа из мира "The Promised Neverland" (Обещанный Неверленд).
+
+Имя: ${name}
+Дата рождения: ${dob}
+Роль: ${role === 'child' ? 'Ребёнок (товар для демонов)' : 'Взрослый (Мама/Сестра-надзиратель)'}
+ID: ${id}
+
+Создай короткий психологический профиль этого персонажа (2-3 предложения): его характер, способности, возможную роль в сюжете. Пиши на русском языке, в стиле секретного досье.`;
+
+    try {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': window.location.href,
+                'X-Title': 'Grace Field Registry'
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: [
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 300
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+    } catch (error) {
+        console.error('AI Error:', error);
+        return `[ОШИБКА СИСТЕМЫ] Невозможно получить анализ. Проверьте API ключ OpenRouter.`;
+    }
+}
+
+// Обработка данных
+async function processData() {
+    const name = document.getElementById('nameInput').value.trim();
+    const dob = document.getElementById('dobInput').value;
+    const role = document.getElementById('roleInput').value;
+
+    if (!name || !dob) {
+        alert('Пожалуйста, заполните все поля!');
+        return;
+    }
+
+    // Блокируем кнопку
+    const btn = document.getElementById('genBtn');
+    btn.disabled = true;
+    btn.textContent = 'ОБРАБОТКА...';
+
+    // Генерируем ID
+    const generatedId = generateId(name, dob, role);
+
+    // Показываем результат
+    const resultSection = document.getElementById('result-section');
+    const outputId = document.getElementById('outputId');
+    const outputName = document.getElementById('outputName');
+    const aiOutput = document.getElementById('aiOutput');
+
+    outputId.textContent = generatedId;
+    outputName.textContent = name.toUpperCase();
+    
+    // Показываем секцию
+    resultSection.classList.add('visible');
+    resultSection.style.display = 'block';
+
+    // Показываем загрузку AI
+    aiOutput.classList.add('ai-loading');
+    aiOutput.textContent = '';
+
+    // Получаем AI анализ
+    const analysis = await getAIAnalysis(name, dob, role, generatedId);
+
+    // Выводим результат
+    aiOutput.classList.remove('ai-loading');
+    aiOutput.textContent = analysis;
+
+    // Разблокируем кнопку
+    btn.disabled = false;
+    btn.textContent = 'Сгенерировать ID';
+}
+</script>
 
 </body>
 </html>
