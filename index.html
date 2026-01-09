@@ -2,117 +2,173 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>The Neverland RP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Grace Field Registry</title>
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+:root {
+    --bg-color: #0a0a0a;
+    --panel-bg: #141414;
+    --text-main: #e0e0e0;
+    --text-dim: #666;
+    --accent: #d63031;
+    --highlight: #ffffff;
+    --border: #333;
+    --input-bg: #1f1f1f;
 }
-
-html, body {
-    width: 100%;
-    height: 100%;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
 body {
-    background: linear-gradient(160deg, #000000 0%, #2a0038 100%);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     display: flex;
-    align-items: center;
     justify-content: center;
-    color: #ffffff;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
 }
-
-.center {
-    text-align: center;
-    line-height: 1.6;
+.system-container {
+    width: 100%;
+    max-width: 420px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    position: relative;
+    overflow: hidden;
 }
-
+.system-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
 h1 {
-    font-size: 36px;
-    font-weight: 700;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+}
+.input-group { margin-bottom: 1.2rem; position: relative; }
+label {
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    background: var(--panel-bg);
+    padding: 0 5px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
     letter-spacing: 1px;
 }
-
-.subtitle {
-    font-size: 14px;
-    color: #bfbfbf;
-    margin-bottom: 18px;
+input, select {
+    width: 100%;
+    padding: 12px 15px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--highlight);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
 }
-
-.text {
-    font-size: 16px;
+input:focus, select:focus { border-color: var(--text-dim); }
+button {
+    width: 100%;
+    padding: 14px;
+    background: var(--text-main);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s;
 }
-
-.text span {
-    color: #9b9b9b;
+button:hover { background: var(--highlight); transform: translateY(-1px); }
+button:disabled { background: #444; cursor: wait; }
+#result-section {
+    margin-top: 2rem;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    display: none;
 }
-
-a {
-    color: #6fc9ff;
-    text-decoration: none;
+.id-number {
+    font-family: 'Courier New', monospace;
+    font-size: 3rem;
+    color: var(--accent);
+    letter-spacing: 5px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(214, 48, 49, 0.4);
+    margin-bottom: 5px;
 }
-
-a:hover {
-    text-decoration: underline;
+.char-name { font-size: 1rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+.ai-log {
+    margin-top: 1.5rem;
+    background: rgba(0,0,0,0.3);
+    border-left: 2px solid var(--text-dim);
+    padding: 15px;
+    text-align: left;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #ccc;
+    min-height: 80px;
+    position: relative;
 }
-
-.widgets {
-    margin-top: 18px;
+.ai-loading::after {
+    content: 'ANALYZING...';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: monospace;
+    animation: blink 1s infinite;
 }
-
-footer {
-    margin-top: 22px;
-    font-size: 12px;
-    color: #777;
-}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.hidden { display: none; }
+.visible { display: block; opacity: 1 !important; }
 </style>
 </head>
-
 <body>
 
-<div class="center">
-    <h1>The Neverland RP</h1>
-    <div class="subtitle">RP сервер по «Обещанному Неверленду»</div>
-
-    <div class="text"><span>IP:</span> theneverlanda.falixsrv.me</div>
-    <div class="text"><span>Порт:</span> 25565 </div>
-    <div class="text">
-        <a href="https://t.me/+5_C1nFjMUxFjZWM6" target="_blank">Telegram проекта</a>
+<div class="system-container">
+    <h1>Grace Field Data</h1>
+    
+    <div class="input-group">
+        <label>IDENTIFIER (NAME)</label>
+        <input type="text" id="nameInput" placeholder="Введите имя..." autocomplete="off">
     </div>
 
-    <div class="widgets">
-        <!-- КНОПКА ГОЛОСОВАНИЯ -->
-        <a href="https://minecraftrating.ru/"
-           class="mr-vote-server"
-           data-server-id="384594">
-            <span id="mr-vote-title">
-                <img src="//minecraftrating.ru/templates/theme/images/logo.png" alt="">
-            </span>
-            <span id="mr-vote-counter"><u></u><i></i></span>
-        </a>
-
-        <script type="text/javascript"
-            src="//minecraftrating.ru/widgets_api/vote/vote_widget.js?v=400">
-        </script>
-
-        <br><br>
-
-        <!-- ПРОВЕРЕНО -->
-        <a href="https://minecraftrating.ru/server/384594/" target="_blank">
-            <img src="//minecraftrating.ru/templates/theme/images/widgets/widget.png"
-                 alt="Сервер проверен MinecraftRating.ru"
-                 width="88" height="31">
-        </a>
+    <div class="input-group">
+        <label>DATE OF ORIGIN</label>
+        <input type="date" id="dobInput">
     </div>
 
-    <footer>
-        
-    </footer>
+    <div class="input-group">
+        <label>CATEGORY</label>
+        <select id="roleInput">
+            <option value="child">Child (Товар)</option>
+            <option value="adult">Adult (Мама/Сестра)</option>
+        </select>
+    </div>
+
+    <button id="genBtn" onclick="processData()">Сгенерировать ID</button>
+
+    <div id="result-section">
+        <div class="id-number" id="outputId">00000</div>
+        <div class="char-name" id="outputName">UNKNOWN</div>
+        <div class="ai-log" id="aiOutput"></div>
+    </div>
 </div>
+
 
 </body>
 </html>
