@@ -1,289 +1,528 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grace Field Registry</title>
-<style>
-:root {
-    --bg-color: #0a0a0a;
-    --panel-bg: #141414;
-    --text-main: #e0e0e0;
-    --text-dim: #666;
-    --accent: #d63031;
-    --highlight: #ffffff;
-    --border: #333;
-    --input-bg: #1f1f1f;
-}
-body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
-}
-.system-container {
-    width: 100%;
-    max-width: 420px;
-    background: var(--panel-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 0 30px rgba(0,0,0,0.8);
-    position: relative;
-    overflow: hidden;
-}
-.system-container::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-}
-h1 {
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    text-align: center;
-    margin-bottom: 2rem;
-    color: var(--text-dim);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 10px;
-}
-.input-group { margin-bottom: 1.2rem; position: relative; }
-label {
-    position: absolute;
-    top: -10px;
-    left: 10px;
-    background: var(--panel-bg);
-    padding: 0 5px;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-}
-input, select {
-    width: 100%;
-    padding: 12px 15px;
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--highlight);
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.3s;
-    box-sizing: border-box;
-}
-input:focus, select:focus { border-color: var(--text-dim); }
-button {
-    width: 100%;
-    padding: 14px;
-    background: var(--text-main);
-    color: var(--bg-color);
-    border: none;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: all 0.3s;
-}
-button:hover { background: var(--highlight); transform: translateY(-1px); }
-button:disabled { background: #444; cursor: wait; }
-#result-section {
-    margin-top: 2rem;
-    text-align: center;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    display: none;
-}
-.id-number {
-    font-family: 'Courier New', monospace;
-    font-size: 3rem;
-    color: var(--accent);
-    letter-spacing: 5px;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(214, 48, 49, 0.4);
-    margin-bottom: 5px;
-}
-.char-name { font-size: 1rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
-.ai-log {
-    margin-top: 1.5rem;
-    background: rgba(0,0,0,0.3);
-    border-left: 2px solid var(--text-dim);
-    padding: 15px;
-    text-align: left;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #ccc;
-    min-height: 80px;
-    position: relative;
-}
-.ai-loading::after {
-    content: 'ANALYZING...';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: monospace;
-    animation: blink 1s infinite;
-}
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-.hidden { display: none; }
-.visible { display: block; opacity: 1 !important; }
-</style>
-</head>
-<body>
-
-<div class="system-container">
-    <h1>Grace Field Data</h1>
-    
-    <div class="input-group">
-        <label>IDENTIFIER (NAME)</label>
-        <input type="text" id="nameInput" placeholder="Введите имя..." autocomplete="off">
-    </div>
-
-    <div class="input-group">
-        <label>DATE OF ORIGIN</label>
-        <input type="date" id="dobInput">
-    </div>
-
-    <div class="input-group">
-        <label>CATEGORY</label>
-        <select id="roleInput">
-            <option value="child">Child (Товар)</option>
-            <option value="adult">Adult (Мама/Сестра)</option>
-        </select>
-    </div>
-
-    <button id="genBtn" onclick="processData()">Сгенерировать ID</button>
-
-    <div id="result-section">
-        <div class="id-number" id="outputId">00000</div>
-        <div class="char-name" id="outputName">UNKNOWN</div>
-        <div class="ai-log" id="aiOutput"></div>
-    </div>
-</div>
-
-<script>
-// Конфигурация OpenRouter
-const OPENROUTER_API_KEY = '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'; // Замените на ваш ключ
-const MODEL = 'google/gemma-2-27b-it:free';
-
-// Генерация уникального ID
-function generateId(name, dob, role) {
-    const hash = Array.from(name + dob).reduce((acc, char) => {
-        return ((acc << 5) - acc) + char.charCodeAt(0);
-    }, 0);
-    
-    let id = Math.abs(hash) % 100000;
-    
-    if (role === 'adult') {
-        id = Math.floor(id / 10) * 10 + 1;
-    } else {
-        id = (id < 10000) ? id + 10000 : id;
-    }
-    
-    return String(id).padStart(5, '0');
-}
-
-// Запрос к OpenRouter AI
-async function getAIAnalysis(name, dob, role, id) {
-    const prompt = `Ты анализируешь персонажа из мира "The Promised Neverland" (Обещанный Неверленд).
-
-Имя: ${name}
-Дата рождения: ${dob}
-Роль: ${role === 'child' ? 'Ребёнок (товар для демонов)' : 'Взрослый (Мама/Сестра-надзиратель)'}
-ID: ${id}
-
-Создай короткий психологический профиль этого персонажа (2-3 предложения): его характер, способности, возможную роль в сюжете. Пиши на русском языке, в стиле секретного досье.`;
-
-    try {
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.href,
-                'X-Title': 'Grace Field Registry'
-            },
-            body: JSON.stringify({
-                model: MODEL,
-                messages: [
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 300
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Payment Checkout</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        const data = await response.json();
-        return data.choices[0].message.content;
-    } catch (error) {
-        console.error('AI Error:', error);
-        return `[ОШИБКА СИСТЕМЫ] Невозможно получить анализ. Проверьте API ключ OpenRouter.`;
-    }
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-// Обработка данных
-async function processData() {
-    const name = document.getElementById('nameInput').value.trim();
-    const dob = document.getElementById('dobInput').value;
-    const role = document.getElementById('roleInput').value;
+        .checkout-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 480px;
+            width: 100%;
+            padding: 40px;
+        }
 
-    if (!name || !dob) {
-        alert('Пожалуйста, заполните все поля!');
-        return;
-    }
+        .demo-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+            font-weight: 600;
+            color: #856404;
+        }
 
-    // Блокируем кнопку
-    const btn = document.getElementById('genBtn');
-    btn.disabled = true;
-    btn.textContent = 'ОБРАБОТКА...';
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #333;
+        }
 
-    // Генерируем ID
-    const generatedId = generateId(name, dob, role);
+        .subtitle {
+            color: #666;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
 
-    // Показываем результат
-    const resultSection = document.getElementById('result-section');
-    const outputId = document.getElementById('outputId');
-    const outputName = document.getElementById('outputName');
-    const aiOutput = document.getElementById('aiOutput');
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-    outputId.textContent = generatedId;
-    outputName.textContent = name.toUpperCase();
-    
-    // Показываем секцию
-    resultSection.classList.add('visible');
-    resultSection.style.display = 'block';
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
 
-    // Показываем загрузку AI
-    aiOutput.classList.add('ai-loading');
-    aiOutput.textContent = '';
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
 
-    // Получаем AI анализ
-    const analysis = await getAIAnalysis(name, dob, role, generatedId);
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
-    // Выводим результат
-    aiOutput.classList.remove('ai-loading');
-    aiOutput.textContent = analysis;
+        input.error {
+            border-color: #dc3545;
+        }
 
-    // Разблокируем кнопку
-    btn.disabled = false;
-    btn.textContent = 'Сгенерировать ID';
-}
-</script>
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
 
+        .error-message.show {
+            display: block;
+        }
+
+        .card-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .card-row .form-group {
+            flex: 1;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 24px;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .pay-button:active {
+            transform: translateY(0);
+        }
+
+        .pay-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .bank-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .modal h2 {
+            text-align: center;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 22px;
+        }
+
+        .modal p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .verification-input {
+            text-align: center;
+            letter-spacing: 8px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .confirm-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .confirm-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .confirm-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Success message */
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 24px;
+            font-size: 48px;
+            color: white;
+        }
+
+        .success-message h2 {
+            color: #28a745;
+            margin-bottom: 16px;
+        }
+
+        .transaction-id {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .checkout-container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .card-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .modal {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="demo-warning">
+            ⚠️ DEMO PAYMENT — NOT A REAL TRANSACTION
+        </div>
+
+        <div id="checkout-form">
+            <h1>Checkout</h1>
+            <p class="subtitle">Complete your demo payment</p>
+
+            <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input 
+                    type="text" 
+                    id="cardNumber" 
+                    placeholder="1234 5678 9012 3456"
+                    maxlength="19"
+                    autocomplete="off"
+                >
+                <div class="error-message" id="cardNumberError">Invalid card number</div>
+            </div>
+
+            <div class="card-row">
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date</label>
+                    <input 
+                        type="text" 
+                        id="expiryDate" 
+                        placeholder="MM/YY"
+                        maxlength="5"
+                        autocomplete="off"
+                    >
+                    <div class="error-message" id="expiryDateError">Invalid or past date</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cvv">CVV</label>
+                    <input 
+                        type="text" 
+                        id="cvv" 
+                        placeholder="123"
+                        maxlength="3"
+                        autocomplete="off"
+                    >
+                    <div class="error-message" id="cvvError">Must be 3 digits</div>
+                </div>
+            </div>
+
+            <button class="pay-button" onclick="handlePayment()">Pay (Demo)</button>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✓</div>
+            <h2>Demo payment successful</h2>
+            <p>Your test transaction has been completed</p>
+            <div class="transaction-id">
+                Transaction ID: <span id="transactionId"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Secure Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="bank-logo">NB</div>
+            <h2>NovaBank Secure Verification</h2>
+            <p>Enter the 6-digit verification code (Demo)</p>
+            
+            <div class="form-group">
+                <input 
+                    type="text" 
+                    id="verificationCode" 
+                    class="verification-input"
+                    placeholder="000000"
+                    maxlength="6"
+                    autocomplete="off"
+                >
+                <div class="error-message" id="verificationError">Please enter 6 digits</div>
+            </div>
+
+            <button class="confirm-button" onclick="handleVerification()">Confirm</button>
+        </div>
+    </div>
+
+    <script>
+        // Format card number with spaces
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let matches = value.match(/\d{1,4}/g);
+            let formattedValue = matches ? matches.join(' ') : value;
+            e.target.value = formattedValue;
+        });
+
+        // Format expiry date with slash
+        document.getElementById('expiryDate').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Allow only digits for CVV
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Allow only digits for verification code
+        document.getElementById('verificationCode').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Luhn algorithm validation
+        function validateLuhn(cardNumber) {
+            const digits = cardNumber.replace(/\s/g, '');
+            if (!/^\d+$/.test(digits) || digits.length < 13 || digits.length > 19) {
+                return false;
+            }
+
+            let sum = 0;
+            let isEven = false;
+
+            for (let i = digits.length - 1; i >= 0; i--) {
+                let digit = parseInt(digits[i]);
+
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) {
+                        digit -= 9;
+                    }
+                }
+
+                sum += digit;
+                isEven = !isEven;
+            }
+
+            return sum % 10 === 0;
+        }
+
+        // Validate expiry date
+        function validateExpiryDate(expiryDate) {
+            if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
+                return false;
+            }
+
+            const [month, year] = expiryDate.split('/').map(num => parseInt(num));
+            
+            if (month < 1 || month > 12) {
+                return false;
+            }
+
+            const now = new Date();
+            const currentYear = now.getFullYear() % 100;
+            const currentMonth = now.getMonth() + 1;
+
+            if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // Validate CVV
+        function validateCVV(cvv) {
+            return /^\d{3}$/.test(cvv);
+        }
+
+        // Show/hide error message
+        function showError(inputId, errorId, show) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            
+            if (show) {
+                input.classList.add('error');
+                error.classList.add('show');
+            } else {
+                input.classList.remove('error');
+                error.classList.remove('show');
+            }
+        }
+
+        // Handle payment button click
+        function handlePayment() {
+            const cardNumber = document.getElementById('cardNumber').value;
+            const expiryDate = document.getElementById('expiryDate').value;
+            const cvv = document.getElementById('cvv').value;
+
+            let hasError = false;
+
+            // Validate card number
+            if (!validateLuhn(cardNumber)) {
+                showError('cardNumber', 'cardNumberError', true);
+                hasError = true;
+            } else {
+                showError('cardNumber', 'cardNumberError', false);
+            }
+
+            // Validate expiry date
+            if (!validateExpiryDate(expiryDate)) {
+                showError('expiryDate', 'expiryDateError', true);
+                hasError = true;
+            } else {
+                showError('expiryDate', 'expiryDateError', false);
+            }
+
+            // Validate CVV
+            if (!validateCVV(cvv)) {
+                showError('cvv', 'cvvError', true);
+                hasError = true;
+            } else {
+                showError('cvv', 'cvvError', false);
+            }
+
+            if (!hasError) {
+                // Show 3D Secure modal
+                document.getElementById('modalOverlay').classList.add('show');
+                document.getElementById('verificationCode').value = '';
+                showError('verificationCode', 'verificationError', false);
+            }
+        }
+
+        // Handle verification confirmation
+        function handleVerification() {
+            const verificationCode = document.getElementById('verificationCode').value;
+
+            if (verificationCode.length !== 6) {
+                showError('verificationCode', 'verificationError', true);
+                return;
+            }
+
+            // Generate fake transaction ID
+            const transactionId = 'TXN-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+            document.getElementById('transactionId').textContent = transactionId;
+
+            // Hide modal
+            document.getElementById('modalOverlay').classList.remove('show');
+
+            // Hide form and show success message
+            document.getElementById('checkout-form').style.display = 'none';
+            document.getElementById('successMessage').classList.add('show');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+    </script>
 </body>
 </html>
