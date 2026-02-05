@@ -47,8 +47,11 @@ module.exports = async (req, res) => {
       timestamp: payment.completedAt
     };
     
-    console.log('Webhook would be sent to:', payment.webhookUrl);
-    console.log('Webhook payload:', webhookPayload);
+    // Log webhook info in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Webhook would be sent to:', payment.webhookUrl);
+      console.log('Webhook payload:', webhookPayload);
+    }
 
     // In production, send actual HTTP request to webhookUrl
     // try {

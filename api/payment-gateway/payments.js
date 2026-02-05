@@ -76,7 +76,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+    if (!customerEmail || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)) {
       return res.status(400).json({ error: 'Valid customer email is required' });
     }
 
