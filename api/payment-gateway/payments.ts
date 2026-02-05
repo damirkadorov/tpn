@@ -1,19 +1,56 @@
-const { v4: uuidv4 } = require('uuid');
+import { VercelRequest, VercelResponse } from '@vercel/node';
+import { v4 as uuidv4 } from 'uuid';
+
+// Types
+interface Payment {
+  paymentId: string;
+  amount: number;
+  currency: string;
+  description: string;
+  customerEmail: string;
+  orderId: string;
+  successUrl?: string;
+  webhookUrl?: string;
+  fee: number;
+  totalAmount: number;
+  status: 'pending' | 'completed' | 'failed';
+  createdAt: string;
+  completedAt?: string;
+}
+
+interface PaymentRequest {
+  amount: number;
+  currency: string;
+  description?: string;
+  customerEmail: string;
+  orderId: string;
+  successUrl?: string;
+  webhookUrl?: string;
+}
+
+interface AuthError {
+  error: string;
+  status: number;
+}
 
 // In-memory storage (in production, use Vercel KV or a database)
 // For demo purposes, we'll use a global object that persists during the function's lifetime
-const payments = global.payments || (global.payments = new Map());
+declare global {
+  var payments: Map<string, Payment> | undefined;
+}
 
-const SUPPORTED_CURRENCIES = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'CAD', 'AUD'];
-const TRANSACTION_FEE_PERCENT = 2.5;
+const payments: Map<string, Payment> = global.payments || (global.payments = new Map());
+
+const SUPPORTED_CURRENCIES: string[] = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'CAD', 'AUD'];
+const TRANSACTION_FEE_PERCENT: number = 2.5;
 
 // Calculate transaction fee
-const calculateFee = (amount) => {
+const calculateFee = (amount: number): number => {
   return (amount * TRANSACTION_FEE_PERCENT) / 100;
 };
 
 // Authenticate API Key
-const authenticateApiKey = (req) => {
+const authenticateApiKey = (req: VercelRequest): AuthError | null => {
   const apiKey = req.headers['x-api-key'];
   
   if (!apiKey) {
@@ -34,21 +71,22 @@ const authenticateApiKey = (req) => {
   }
   
   // Validate against configured API keys
-  if (!validApiKeys.includes(apiKey)) {
+  if (!validApiKeys.includes(apiKey as string)) {
     return { error: 'Invalid API key', status: 401 };
   }
   
   return null;
 };
 
-module.exports = async (req, res) => {
+export default async (req: VercelRequest, res: VercelResponse): Promise<void> => {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   // POST - Create payment
@@ -56,7 +94,8 @@ module.exports = async (req, res) => {
     // Authenticate
     const authError = authenticateApiKey(req);
     if (authError) {
-      return res.status(authError.status).json({ error: authError.error });
+      res.status(authError.status).json({ error: authError.error });
+      return;
     }
 
     const {
@@ -67,31 +106,35 @@ module.exports = async (req, res) => {
       orderId,
       successUrl,
       webhookUrl
-    } = req.body;
+    } = req.body as PaymentRequest;
 
     // Validation
     if (!amount || typeof amount !== 'number' || amount <= 0) {
-      return res.status(400).json({ error: 'Valid amount is required' });
+      res.status(400).json({ error: 'Valid amount is required' });
+      return;
     }
 
     if (!currency || !SUPPORTED_CURRENCIES.includes(currency)) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         error: `Currency must be one of: ${SUPPORTED_CURRENCIES.join(', ')}` 
       });
+      return;
     }
 
     if (!customerEmail || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)) {
-      return res.status(400).json({ error: 'Valid customer email is required' });
+      res.status(400).json({ error: 'Valid customer email is required' });
+      return;
     }
 
     if (!orderId) {
-      return res.status(400).json({ error: 'Order ID is required' });
+      res.status(400).json({ error: 'Order ID is required' });
+      return;
     }
 
     // Create payment
     const paymentId = uuidv4();
     const fee = calculateFee(amount);
-    const payment = {
+    const payment: Payment = {
       paymentId,
       amount,
       currency,
@@ -113,7 +156,7 @@ module.exports = async (req, res) => {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const paymentUrl = `${protocol}://${host}/payment.html?paymentId=${paymentId}`;
 
-    return res.status(201).json({
+    res.status(201).json({
       paymentId,
       paymentUrl,
       amount,
@@ -122,6 +165,7 @@ module.exports = async (req, res) => {
       totalAmount: payment.totalAmount,
       status: 'pending'
     });
+    return;
   }
 
   // GET - Get payment status
@@ -129,22 +173,25 @@ module.exports = async (req, res) => {
     // Authenticate
     const authError = authenticateApiKey(req);
     if (authError) {
-      return res.status(authError.status).json({ error: authError.error });
+      res.status(authError.status).json({ error: authError.error });
+      return;
     }
 
     const { paymentId } = req.query;
 
-    if (!paymentId) {
-      return res.status(400).json({ error: 'Payment ID is required' });
+    if (!paymentId || typeof paymentId !== 'string') {
+      res.status(400).json({ error: 'Payment ID is required' });
+      return;
     }
 
     const payment = payments.get(paymentId);
 
     if (!payment) {
-      return res.status(404).json({ error: 'Payment not found' });
+      res.status(404).json({ error: 'Payment not found' });
+      return;
     }
 
-    return res.json({
+    res.json({
       paymentId: payment.paymentId,
       amount: payment.amount,
       currency: payment.currency,
@@ -155,7 +202,8 @@ module.exports = async (req, res) => {
       createdAt: payment.createdAt,
       completedAt: payment.completedAt
     });
+    return;
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  res.status(405).json({ error: 'Method not allowed' });
 };

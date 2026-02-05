@@ -1,12 +1,15 @@
 # Payment Gateway Integration
 
-Payment gateway integration deployed on Vercel with serverless functions.
+Payment gateway integration deployed on Vercel with serverless functions written in **TypeScript**.
 
 ## 🚀 Deployment
 
 This project is configured for deployment on Vercel:
 
 ```bash
+# Install dependencies
+npm install
+
 # Install Vercel CLI
 npm i -g vercel
 
@@ -18,6 +21,22 @@ vercel env add API_KEYS
 ```
 
 Or simply push to GitHub and connect to Vercel for automatic deployments.
+
+## 🔧 Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run type checking
+npm run type-check
+
+# Build TypeScript (optional)
+npm run build
+
+# Run locally with Vercel dev server
+npm run dev
+```
 
 ## 🔐 Environment Variables
 
@@ -170,10 +189,12 @@ curl -X GET "https://your-domain.vercel.app/api/payment-gateway/payments?payment
 
 ## Notes
 
+- **Built with TypeScript** for type safety and better developer experience
 - This is a demo implementation using in-memory storage
 - In production, use Vercel KV, Redis, or a database for persistent storage
 - Implement proper API key validation and storage
 - Use HTTPS for all communication (Vercel provides this automatically)
 - Implement proper webhook signature verification
 - Add rate limiting and security measures
+- All API endpoints are serverless functions deployed on Vercel
 
