@@ -20,11 +20,13 @@ const authenticateApiKey = (req) => {
     return { error: 'API key is required', status: 401 };
   }
   
-  // In production, validate against stored API keys
+  // In production, validate against stored API keys (e.g., environment variables or database)
   // For demo purposes, we accept any non-empty API key
-  if (apiKey.length === 0) {
-    return { error: 'Invalid API key', status: 401 };
-  }
+  // Example production validation:
+  // const validApiKeys = process.env.VALID_API_KEYS?.split(',') || [];
+  // if (!validApiKeys.includes(apiKey)) {
+  //   return { error: 'Invalid API key', status: 401 };
+  // }
   
   return null;
 };

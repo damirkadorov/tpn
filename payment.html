@@ -629,7 +629,8 @@
                     }, 3000);
                 }
             } catch (error) {
-                alert('Payment failed. Please try again.');
+                const errorMessage = error.message || 'Payment failed. Please try again.';
+                alert('Payment Error: ' + errorMessage);
                 document.getElementById('modalOverlay').classList.remove('show');
             }
         }
