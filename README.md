@@ -1,6 +1,14 @@
 # Payment Gateway Integration
 
-Payment gateway integration deployed on Vercel with serverless functions written in **TypeScript**.
+Payment gateway integration deployed on Vercel with **Next.js** and serverless functions written in **TypeScript**.
+
+## 🚀 Features
+
+- **Next.js** - Modern React framework with server-side rendering
+- **TypeScript** - Type-safe code for better developer experience
+- **Serverless API** - TypeScript serverless functions
+- **Responsive Design** - Mobile-friendly payment UI
+- **3D Secure** - Mock 3D Secure verification flow
 
 ## 🚀 Deployment
 
@@ -28,15 +36,20 @@ Or simply push to GitHub and connect to Vercel for automatic deployments.
 # Install dependencies
 npm install
 
-# Run type checking
-npm run type-check
+# Run Next.js development server
+npm run dev
 
-# Build TypeScript (optional)
+# Build for production
 npm run build
 
-# Run locally with Vercel dev server
-npm run dev
+# Start production server
+npm run start
+
+# Run type checking
+npm run type-check
 ```
+
+Visit http://localhost:3000 to see the application.
 
 ## 🔐 Environment Variables
 
@@ -184,12 +197,16 @@ curl -X GET "https://your-domain.vercel.app/api/payment-gateway/payments?payment
 
 ## Pages
 
-- `/index.html` - Demo payment UI
-- `/payment.html` - Payment checkout page (for customers)
+- `/` - Demo payment UI (Next.js page)
+- `/payment` - Payment checkout page (Next.js page with query parameter: ?paymentId=xxx)
+
+Legacy HTML files are still available:
+- `/index.html` - Static demo payment UI
+- `/payment.html` - Static payment checkout page
 
 ## Notes
 
-- **Built with TypeScript** for type safety and better developer experience
+- **Built with Next.js and TypeScript** for modern React development with type safety
 - This is a demo implementation using in-memory storage
 - In production, use Vercel KV, Redis, or a database for persistent storage
 - Implement proper API key validation and storage
@@ -197,4 +214,5 @@ curl -X GET "https://your-domain.vercel.app/api/payment-gateway/payments?payment
 - Implement proper webhook signature verification
 - Add rate limiting and security measures
 - All API endpoints are serverless functions deployed on Vercel
+- Next.js pages are automatically optimized and deployed alongside API routes
 

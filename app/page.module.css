@@ -1,0 +1,238 @@
+.checkoutContainer {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 480px;
+  width: 100%;
+  padding: 40px;
+}
+
+.demoWarning {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 24px;
+  text-align: center;
+  font-weight: 600;
+  color: #856404;
+}
+
+.title {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.formGroup input.error {
+  border-color: #dc3545;
+}
+
+.errorMessage {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.cardRow {
+  display: flex;
+  gap: 16px;
+}
+
+.cardRow .formGroup {
+  flex: 1;
+}
+
+.payButton {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 24px;
+}
+
+.payButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.payButton:active {
+  transform: translateY(0);
+}
+
+.payButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.bankLogo {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.modal h2 {
+  text-align: center;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 22px;
+}
+
+.modal p {
+  text-align: center;
+  color: #666;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.verificationInput {
+  text-align: center;
+  letter-spacing: 8px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.confirmButton {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: transform 0.2s;
+}
+
+.confirmButton:hover {
+  transform: translateY(-2px);
+}
+
+.confirmButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success message */
+.successMessage {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  background: #28a745;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 24px;
+  font-size: 48px;
+  color: white;
+}
+
+.successMessage h2 {
+  color: #28a745;
+  margin-bottom: 16px;
+}
+
+.transactionId {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-family: monospace;
+  color: #666;
+}
+
+@media (max-width: 480px) {
+  .checkoutContainer {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .cardRow {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .modal {
+    padding: 24px;
+  }
+}
