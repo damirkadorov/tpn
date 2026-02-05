@@ -57,11 +57,15 @@ const authenticateApiKey = (request: NextRequest): { error: string; status: numb
   
   // In production, API keys must be configured
   if (validApiKeys.length === 0) {
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+    // Only allow bypass in local development (not on Vercel)
+    const isLocalDev = process.env.NODE_ENV === 'development' && !process.env.VERCEL;
+    
+    if (!isLocalDev) {
       return { error: 'API key configuration missing. Contact system administrator.', status: 500 };
     }
-    // Development mode: accept any API key with warning
-    console.warn('Warning: No API_KEYS configured in environment variables. Accepting any API key for demo purposes.');
+    
+    // Local development mode: accept any API key with warning
+    console.warn('Warning: No API_KEYS configured. Accepting any API key for local development only.');
     return null;
   }
   

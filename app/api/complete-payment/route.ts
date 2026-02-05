@@ -79,14 +79,22 @@ export async function POST(request: NextRequest) {
       timestamp: payment.completedAt
     };
     
-    // Log webhook info in development
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Webhook would be sent to:', payment.webhookUrl);
-      console.log('Webhook payload:', webhookPayload);
+    // Attempt to send webhook (fire and forget, don't block the response)
+    try {
+      fetch(payment.webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookPayload),
+      }).catch((error) => {
+        // Log error but don't fail the payment completion
+        console.error('Webhook delivery failed:', error);
+      });
+    } catch (error) {
+      // Log error but don't fail the payment completion
+      console.error('Webhook delivery error:', error);
     }
-
-    // Note: Webhook delivery is intentionally simplified for this demo
-    // In production, implement actual HTTP request with retry logic
   }
 
   return NextResponse.json({

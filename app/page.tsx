@@ -3,9 +3,6 @@
 import { useState } from 'react';
 import styles from './page.module.css';
 
-const PAYMENT_GATEWAY_URL = 'https://tpn-ochre.vercel.app';
-const API_KEY = 'pk_0a1092c08019e9c8bcfb566d078e8751b6de39dcd3afe943488323b407a6488d';
-
 const PRESET_AMOUNTS = [10, 25, 50, 100, 250, 500];
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CHF'];
 
@@ -31,6 +28,14 @@ export default function Home() {
     }
   };
 
+  const generateOrderId = (): string => {
+    // Use crypto.randomUUID for secure unique identifier
+    const uuid = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+    return `ORDER-${uuid.substring(0, 8).toUpperCase()}`;
+  };
+
   const handleCreatePayment = async () => {
     // Validation
     if (!amount || amount <= 0) {
@@ -47,13 +52,16 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const orderId = generateOrderId();
       
-      const response = await fetch(`${PAYMENT_GATEWAY_URL}/api/payment-gateway/payments`, {
+      // Use environment variable for API key, fallback to demo key for local development
+      const apiKey = process.env.NEXT_PUBLIC_PAYMENT_API_KEY || 'pk_0a1092c08019e9c8bcfb566d078e8751b6de39dcd3afe943488323b407a6488d';
+      
+      const response = await fetch('/api/payment-gateway/payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': API_KEY,
+          'X-API-Key': apiKey,
         },
         body: JSON.stringify({
           amount,
