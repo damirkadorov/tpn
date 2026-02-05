@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Checkout</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .checkout-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 480px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .payment-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .payment-details h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .detail-label {
+            color: #666;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .total-row {
+            border-top: 2px solid #dee2e6;
+            padding-top: 12px;
+            margin-top: 12px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input.error {
+            border-color: #dc3545;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .card-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .card-row .form-group {
+            flex: 1;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 24px;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .pay-button:active {
+            transform: translateY(0);
+        }
+
+        .pay-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .bank-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .modal h2 {
+            text-align: center;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 22px;
+        }
+
+        .modal p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .verification-input {
+            text-align: center;
+            letter-spacing: 8px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .confirm-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .confirm-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .confirm-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 24px;
+            font-size: 48px;
+            color: white;
+        }
+
+        .success-message h2 {
+            color: #28a745;
+            margin-bottom: 16px;
+        }
+
+        .transaction-id {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            color: #666;
+            word-break: break-all;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .checkout-container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .card-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .modal {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div id="loading" class="loading">
+            Loading payment details...
+        </div>
+
+        <div id="checkout-form" style="display: none;">
+            <h1>Checkout</h1>
+            <p class="subtitle">Complete your payment</p>
+
+            <div class="payment-details" id="paymentDetails">
+                <h2>Payment Details</h2>
+                <div class="detail-row">
+                    <span class="detail-label">Amount:</span>
+                    <span class="detail-value" id="amount">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Transaction Fee (2.5%):</span>
+                    <span class="detail-value" id="fee">-</span>
+                </div>
+                <div class="detail-row total-row">
+                    <span class="detail-label">Total:</span>
+                    <span class="detail-value" id="total">-</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input 
+                    type="text" 
+                    id="cardNumber" 
+                    placeholder="1234 5678 9012 3456"
+                    maxlength="19"
+                    autocomplete="off"
+                >
+                <div class="error-message" id="cardNumberError">Invalid card number</div>
+            </div>
+
+            <div class="card-row">
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date</label>
+                    <input 
+                        type="text" 
+                        id="expiryDate" 
+                        placeholder="MM/YY"
+                        maxlength="5"
+                        autocomplete="off"
+                    >
+                    <div class="error-message" id="expiryDateError">Invalid or past date</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cvv">CVV</label>
+                    <input 
+                        type="text" 
+                        id="cvv" 
+                        placeholder="123"
+                        maxlength="3"
+                        autocomplete="off"
+                    >
+                    <div class="error-message" id="cvvError">Must be 3 digits</div>
+                </div>
+            </div>
+
+            <button class="pay-button" onclick="handlePayment()">Pay Now</button>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✓</div>
+            <h2>Payment successful!</h2>
+            <p>Your transaction has been completed</p>
+            <div class="transaction-id">
+                Transaction ID: <span id="transactionId"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="bank-logo">PG</div>
+            <h2>Secure Verification</h2>
+            <p>Enter the 6-digit verification code</p>
+            
+            <div class="form-group">
+                <input 
+                    type="text" 
+                    id="verificationCode" 
+                    class="verification-input"
+                    placeholder="000000"
+                    maxlength="6"
+                    autocomplete="off"
+                >
+                <div class="error-message" id="verificationError">Please enter 6 digits</div>
+            </div>
+
+            <button class="confirm-button" onclick="handleVerification()">Confirm</button>
+        </div>
+    </div>
+
+    <script>
+        let paymentData = null;
+
+        // Get payment ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('paymentId');
+
+        if (!paymentId) {
+            document.getElementById('loading').innerHTML = 
+                '<p style="color: #dc3545;">Invalid payment link</p>';
+        }
+
+        // Load payment details
+        async function loadPaymentDetails() {
+            try {
+                const response = await fetch(`/api/payment-info?paymentId=${paymentId}`);
+                if (!response.ok) {
+                    throw new Error('Payment not found');
+                }
+                paymentData = await response.json();
+                
+                if (paymentData.status === 'completed') {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('transactionId').textContent = paymentData.paymentId;
+                    document.getElementById('successMessage').classList.add('show');
+                    return;
+                }
+
+                // Display payment details
+                document.getElementById('amount').textContent = 
+                    `${paymentData.amount.toFixed(2)} ${paymentData.currency}`;
+                document.getElementById('fee').textContent = 
+                    `${paymentData.fee.toFixed(2)} ${paymentData.currency}`;
+                document.getElementById('total').textContent = 
+                    `${paymentData.totalAmount.toFixed(2)} ${paymentData.currency}`;
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('checkout-form').style.display = 'block';
+            } catch (error) {
+                document.getElementById('loading').innerHTML = 
+                    '<p style="color: #dc3545;">Payment not found or expired</p>';
+            }
+        }
+
+        // Load payment details on page load
+        if (paymentId) {
+            loadPaymentDetails();
+        }
+
+        // Format card number with spaces
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let matches = value.match(/\d{1,4}/g);
+            let formattedValue = matches ? matches.join(' ') : value;
+            e.target.value = formattedValue;
+        });
+
+        // Format expiry date with slash
+        document.getElementById('expiryDate').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Allow only digits for CVV
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Allow only digits for verification code
+        document.getElementById('verificationCode').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Luhn algorithm validation
+        function validateLuhn(cardNumber) {
+            const digits = cardNumber.replace(/\s/g, '');
+            // Most payment cards are 13-19 digits
+            // Visa: 13 or 16 digits, Mastercard: 16 digits, Amex: 15 digits
+            // Discover: 16 digits, Diners: 14 digits, JCB: 15-16 digits
+            // Note: This is a generic validation using Luhn algorithm
+            // For production, consider card-type-specific validation based on BIN ranges
+            if (!/^\d+$/.test(digits) || digits.length < 13 || digits.length > 19) {
+                return false;
+            }
+
+            let sum = 0;
+            let isEven = false;
+
+            for (let i = digits.length - 1; i >= 0; i--) {
+                let digit = parseInt(digits[i]);
+
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) {
+                        digit -= 9;
+                    }
+                }
+
+                sum += digit;
+                isEven = !isEven;
+            }
+
+            return sum % 10 === 0;
+        }
+
+        // Validate expiry date
+        function validateExpiryDate(expiryDate) {
+            if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
+                return false;
+            }
+
+            const [month, year] = expiryDate.split('/').map(num => parseInt(num));
+            
+            if (month < 1 || month > 12) {
+                return false;
+            }
+
+            const now = new Date();
+            const currentYear = now.getFullYear() % 100;
+            const currentMonth = now.getMonth() + 1;
+
+            if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // Validate CVV
+        function validateCVV(cvv) {
+            return /^\d{3}$/.test(cvv);
+        }
+
+        // Show/hide error message
+        function showError(inputId, errorId, show) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            
+            if (show) {
+                input.classList.add('error');
+                error.classList.add('show');
+            } else {
+                input.classList.remove('error');
+                error.classList.remove('show');
+            }
+        }
+
+        // Handle payment button click
+        function handlePayment() {
+            const cardNumber = document.getElementById('cardNumber').value;
+            const expiryDate = document.getElementById('expiryDate').value;
+            const cvv = document.getElementById('cvv').value;
+
+            let hasError = false;
+
+            // Validate card number
+            if (!validateLuhn(cardNumber)) {
+                showError('cardNumber', 'cardNumberError', true);
+                hasError = true;
+            } else {
+                showError('cardNumber', 'cardNumberError', false);
+            }
+
+            // Validate expiry date
+            if (!validateExpiryDate(expiryDate)) {
+                showError('expiryDate', 'expiryDateError', true);
+                hasError = true;
+            } else {
+                showError('expiryDate', 'expiryDateError', false);
+            }
+
+            // Validate CVV
+            if (!validateCVV(cvv)) {
+                showError('cvv', 'cvvError', true);
+                hasError = true;
+            } else {
+                showError('cvv', 'cvvError', false);
+            }
+
+            if (!hasError) {
+                // Show 3D Secure modal
+                document.getElementById('modalOverlay').classList.add('show');
+                document.getElementById('verificationCode').value = '';
+                showError('verificationCode', 'verificationError', false);
+            }
+        }
+
+        // Handle verification confirmation
+        async function handleVerification() {
+            const verificationCode = document.getElementById('verificationCode').value;
+
+            if (verificationCode.length !== 6) {
+                showError('verificationCode', 'verificationError', true);
+                return;
+            }
+
+            // Complete the payment
+            try {
+                const response = await fetch(`/api/complete-payment?paymentId=${paymentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Payment completion failed');
+                }
+
+                const result = await response.json();
+                
+                // Hide modal
+                document.getElementById('modalOverlay').classList.remove('show');
+
+                // Hide form and show success message
+                document.getElementById('checkout-form').style.display = 'none';
+                document.getElementById('transactionId').textContent = result.paymentId;
+                document.getElementById('successMessage').classList.add('show');
+
+                // Redirect to success URL after 3 seconds if provided
+                if (result.redirectUrl) {
+                    setTimeout(() => {
+                        window.location.href = result.redirectUrl;
+                    }, 3000);
+                }
+            } catch (error) {
+                const errorMessage = error.message || 'Unable to process payment. Please check your details and try again, or contact support if the issue persists.';
+                alert('Payment Error: ' + errorMessage);
+                document.getElementById('modalOverlay').classList.remove('show');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
