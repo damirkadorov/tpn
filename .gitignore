@@ -6,3 +6,5 @@ package-lock.json
 .DS_Store
 test-*.js
 /tmp/
+dist/
+*.tsbuildinfo
