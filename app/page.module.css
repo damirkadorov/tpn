@@ -2,7 +2,7 @@
   background: white;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 480px;
+  max-width: 520px;
   width: 100%;
   padding: 40px;
 }
@@ -49,6 +49,7 @@
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
 .formGroup input:focus {
@@ -60,10 +61,115 @@
   border-color: #dc3545;
 }
 
+.selectField {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  background: white;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.selectField:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
 .errorMessage {
   color: #dc3545;
   font-size: 12px;
   margin-top: 4px;
+}
+
+.errorAlert {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* Amount Grid */
+.amountGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.amountButton {
+  padding: 16px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.amountButton:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.amountButtonActive {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+/* Payment Summary */
+.paymentSummary {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.summaryTotal {
+  border-top: 2px solid #dee2e6;
+  margin-top: 8px;
+  padding-top: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* API Info */
+.apiInfo {
+  margin-top: 24px;
+  padding: 16px;
+  background: #e7f3ff;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.apiInfo p {
+  font-size: 12px;
+  color: #0066cc;
+  margin-bottom: 8px;
+}
+
+.apiInfo code {
+  font-size: 11px;
+  background: #d0e8ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #004499;
 }
 
 .cardRow {
@@ -101,6 +207,7 @@
 .payButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Modal styles */
@@ -225,6 +332,10 @@
 
   .title {
     font-size: 24px;
+  }
+
+  .amountGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .cardRow {
