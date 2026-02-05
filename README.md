@@ -12,9 +12,34 @@ npm i -g vercel
 
 # Deploy
 vercel
+
+# Add environment variables (recommended for production)
+vercel env add API_KEYS
 ```
 
 Or simply push to GitHub and connect to Vercel for automatic deployments.
+
+## 🔐 Environment Variables
+
+Create a `.env` file for local development (copy from `.env.example`):
+
+```bash
+cp .env.example .env
+```
+
+**Required Environment Variables:**
+
+- `API_KEYS` - Comma-separated list of valid API keys (e.g., `key1,key2,key3`)
+  
+**Optional Environment Variables:**
+
+- `WEBHOOK_SECRET` - Secret for signing webhook payloads (future enhancement)
+
+**For Vercel deployment**, add environment variables via:
+- Vercel Dashboard → Project Settings → Environment Variables
+- Or use Vercel CLI: `vercel env add API_KEYS`
+
+**Note:** If `API_KEYS` is not set, the API will accept any API key (for demo/development only).
 
 ## 📚 Quick Start Guide
 

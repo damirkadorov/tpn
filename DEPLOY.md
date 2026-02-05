@@ -41,12 +41,66 @@ npx vercel dev
 
 The local server will start on http://localhost:3000
 
-## Environment Variables (Optional)
+## Environment Variables (Required for Production)
 
-For production, you can add environment variables in Vercel Dashboard:
+### Setting Up API Keys
 
-- `API_KEY_SECRET` - Secret for validating API keys
-- `WEBHOOK_SECRET` - Secret for signing webhooks
+1. **For Local Development:**
+
+```bash
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env and add your API keys
+nano .env
+```
+
+Example `.env` file:
+```env
+API_KEYS=demo_api_key_123,prod_api_key_456,test_api_key_789
+WEBHOOK_SECRET=your_webhook_secret_here
+```
+
+2. **For Vercel Deployment:**
+
+Via Vercel Dashboard:
+1. Go to your project in Vercel Dashboard
+2. Navigate to Settings → Environment Variables
+3. Add `API_KEYS` with value: `key1,key2,key3`
+4. Select environments: Production, Preview, Development
+5. Save
+
+Via Vercel CLI:
+```bash
+# Add API_KEYS for all environments
+vercel env add API_KEYS
+
+# Or add for specific environment
+vercel env add API_KEYS production
+```
+
+3. **Testing with Environment Variables:**
+
+```bash
+# Set environment variable and run locally
+API_KEYS=test_key_123 vercel dev
+
+# Or add to .env file and run
+vercel dev
+```
+
+### Environment Variables Reference
+
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `API_KEYS` | Comma-separated list of valid API keys | Yes (for production) | `key1,key2,key3` |
+| `WEBHOOK_SECRET` | Secret for signing webhooks | No | `your_secret_here` |
+
+**Security Notes:**
+- Never commit `.env` file to Git (already in `.gitignore`)
+- Use strong, random API keys in production
+- Rotate API keys periodically
+- If `API_KEYS` is not set, the API accepts any key (development only)
 
 ## Project Structure
 
