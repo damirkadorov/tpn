@@ -157,91 +157,6 @@
             cursor: not-allowed;
         }
 
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .bank-logo {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 20px;
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .modal h2 {
-            text-align: center;
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 22px;
-        }
-
-        .modal p {
-            text-align: center;
-            color: #666;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-
-        .verification-input {
-            text-align: center;
-            letter-spacing: 8px;
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .confirm-button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: transform 0.2s;
-        }
-
-        .confirm-button:hover {
-            transform: translateY(-2px);
-        }
-
-        .confirm-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
         .success-message {
             display: none;
             text-align: center;
@@ -383,28 +298,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="bank-logo">PG</div>
-            <h2>Secure Verification</h2>
-            <p>Enter the 6-digit verification code</p>
-            
-            <div class="form-group">
-                <input 
-                    type="text" 
-                    id="verificationCode" 
-                    class="verification-input"
-                    placeholder="000000"
-                    maxlength="6"
-                    autocomplete="off"
-                >
-                <div class="error-message" id="verificationError">Please enter 6 digits</div>
-            </div>
-
-            <button class="confirm-button" onclick="handleVerification()">Confirm</button>
-        </div>
-    </div>
-
     <script>
         let paymentData = null;
 
@@ -473,11 +366,6 @@
 
         // Allow only digits for CVV
         document.getElementById('cvv').addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/\D/g, '');
-        });
-
-        // Allow only digits for verification code
-        document.getElementById('verificationCode').addEventListener('input', function(e) {
             e.target.value = e.target.value.replace(/\D/g, '');
         });
 
@@ -556,7 +444,7 @@
         }
 
         // Handle payment button click
-        function handlePayment() {
+        async function handlePayment() {
             const cardNumber = document.getElementById('cardNumber').value;
             const expiryDate = document.getElementById('expiryDate').value;
             const cvv = document.getElementById('cvv').value;
@@ -588,64 +476,38 @@
             }
 
             if (!hasError) {
-                // Show 3D Secure modal
-                document.getElementById('modalOverlay').classList.add('show');
-                document.getElementById('verificationCode').value = '';
-                showError('verificationCode', 'verificationError', false);
-            }
-        }
+                // Complete the payment
+                try {
+                    const response = await fetch(`/api/complete-payment?paymentId=${paymentId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
 
-        // Handle verification confirmation
-        async function handleVerification() {
-            const verificationCode = document.getElementById('verificationCode').value;
-
-            if (verificationCode.length !== 6) {
-                showError('verificationCode', 'verificationError', true);
-                return;
-            }
-
-            // Complete the payment
-            try {
-                const response = await fetch(`/api/complete-payment?paymentId=${paymentId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
+                    if (!response.ok) {
+                        throw new Error('Payment completion failed');
                     }
-                });
 
-                if (!response.ok) {
-                    throw new Error('Payment completion failed');
+                    const result = await response.json();
+
+                    // Hide form and show success message
+                    document.getElementById('checkout-form').style.display = 'none';
+                    document.getElementById('transactionId').textContent = result.paymentId;
+                    document.getElementById('successMessage').classList.add('show');
+
+                    // Redirect to success URL after 3 seconds if provided
+                    if (result.redirectUrl) {
+                        setTimeout(() => {
+                            window.location.href = result.redirectUrl;
+                        }, 3000);
+                    }
+                } catch (error) {
+                    const errorMessage = error.message || 'Unable to process payment. Please check your details and try again, or contact support if the issue persists.';
+                    alert('Payment Error: ' + errorMessage);
                 }
-
-                const result = await response.json();
-                
-                // Hide modal
-                document.getElementById('modalOverlay').classList.remove('show');
-
-                // Hide form and show success message
-                document.getElementById('checkout-form').style.display = 'none';
-                document.getElementById('transactionId').textContent = result.paymentId;
-                document.getElementById('successMessage').classList.add('show');
-
-                // Redirect to success URL after 3 seconds if provided
-                if (result.redirectUrl) {
-                    setTimeout(() => {
-                        window.location.href = result.redirectUrl;
-                    }, 3000);
-                }
-            } catch (error) {
-                const errorMessage = error.message || 'Unable to process payment. Please check your details and try again, or contact support if the issue persists.';
-                alert('Payment Error: ' + errorMessage);
-                document.getElementById('modalOverlay').classList.remove('show');
             }
         }
-
-        // Close modal when clicking outside
-        document.getElementById('modalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('show');
-            }
-        });
     </script>
 </body>
 </html>

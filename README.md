@@ -8,7 +8,6 @@ Payment gateway integration deployed on Vercel with **Next.js** and serverless f
 - **TypeScript** - Type-safe code for better developer experience
 - **Serverless API** - TypeScript serverless functions
 - **Responsive Design** - Mobile-friendly payment UI
-- **3D Secure** - Mock 3D Secure verification flow
 
 ## 🚀 Deployment
 
@@ -215,4 +214,3 @@ Legacy HTML files are still available:
 - Add rate limiting and security measures
 - All API endpoints are serverless functions deployed on Vercel
 - Next.js pages are automatically optimized and deployed alongside API routes
-
