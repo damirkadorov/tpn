@@ -53,15 +53,26 @@ module.exports = async (req, res) => {
       console.log('Webhook payload:', webhookPayload);
     }
 
-    // In production, send actual HTTP request to webhookUrl
+    // Note: Webhook delivery is intentionally simplified for this demo
+    // In production, implement:
+    // 1. Actual HTTP request with proper error handling
+    // 2. Retry logic for failed deliveries
+    // 3. Webhook signature verification
+    // 4. Delivery status tracking
+    // 
+    // Example implementation:
     // try {
     //   await fetch(payment.webhookUrl, {
     //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
+    //     headers: { 
+    //       'Content-Type': 'application/json',
+    //       'X-Webhook-Signature': signPayload(webhookPayload, secret)
+    //     },
     //     body: JSON.stringify(webhookPayload)
     //   });
     // } catch (error) {
     //   console.error('Webhook delivery failed:', error);
+    //   // Implement retry logic here
     // }
   }
 

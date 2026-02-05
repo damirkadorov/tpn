@@ -95,6 +95,7 @@ vercel dev
 |----------|-------------|----------|---------|
 | `API_KEYS` | Comma-separated list of valid API keys | Yes | `key1,key2,key3` |
 | `NODE_ENV` | Environment mode (set by Vercel) | No | `production` |
+| `VERCEL_ENV` | Vercel environment (set by Vercel) | No | `production` |
 
 **Security Notes:**
 - Never commit `.env` file to Git (already in `.gitignore`)

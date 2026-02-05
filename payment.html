@@ -487,6 +487,8 @@
             // Most payment cards are 13-19 digits
             // Visa: 13 or 16 digits, Mastercard: 16 digits, Amex: 15 digits
             // Discover: 16 digits, Diners: 14 digits, JCB: 15-16 digits
+            // Note: This is a generic validation using Luhn algorithm
+            // For production, consider card-type-specific validation based on BIN ranges
             if (!/^\d+$/.test(digits) || digits.length < 13 || digits.length > 19) {
                 return false;
             }
