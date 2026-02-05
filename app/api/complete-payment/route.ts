@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Types
 interface Payment {
@@ -28,44 +28,39 @@ interface WebhookPayload {
 
 // In-memory storage
 declare global {
+  // eslint-disable-next-line no-var
   var payments: Map<string, Payment> | undefined;
 }
 
 const payments: Map<string, Payment> = global.payments || (global.payments = new Map());
 
-export default async (req: VercelRequest, res: VercelResponse): Promise<void> => {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders });
+}
 
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
+export async function POST(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const paymentId = searchParams.get('paymentId');
 
-  const { paymentId } = req.query;
-
-  if (!paymentId || typeof paymentId !== 'string') {
-    res.status(400).json({ error: 'Payment ID is required' });
-    return;
+  if (!paymentId) {
+    return NextResponse.json({ error: 'Payment ID is required' }, { status: 400, headers: corsHeaders });
   }
 
   const payment = payments.get(paymentId);
 
   if (!payment) {
-    res.status(404).json({ error: 'Payment not found' });
-    return;
+    return NextResponse.json({ error: 'Payment not found' }, { status: 404, headers: corsHeaders });
   }
 
   if (payment.status === 'completed') {
-    res.status(400).json({ error: 'Payment already completed' });
-    return;
+    return NextResponse.json({ error: 'Payment already completed' }, { status: 400, headers: corsHeaders });
   }
 
   // Update payment status
@@ -91,32 +86,13 @@ export default async (req: VercelRequest, res: VercelResponse): Promise<void> =>
     }
 
     // Note: Webhook delivery is intentionally simplified for this demo
-    // In production, implement:
-    // 1. Actual HTTP request with proper error handling
-    // 2. Retry logic for failed deliveries
-    // 3. Webhook signature verification
-    // 4. Delivery status tracking
-    // 
-    // Example implementation:
-    // try {
-    //   await fetch(payment.webhookUrl, {
-    //     method: 'POST',
-    //     headers: { 
-    //       'Content-Type': 'application/json',
-    //       'X-Webhook-Signature': signPayload(webhookPayload, secret)
-    //     },
-    //     body: JSON.stringify(webhookPayload)
-    //   });
-    // } catch (error) {
-    //   console.error('Webhook delivery failed:', error);
-    //   // Implement retry logic here
-    // }
+    // In production, implement actual HTTP request with retry logic
   }
 
-  res.json({
+  return NextResponse.json({
     success: true,
     paymentId: payment.paymentId,
     status: payment.status,
     redirectUrl: payment.successUrl
-  });
-};
+  }, { headers: corsHeaders });
+}
