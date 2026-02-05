@@ -21,15 +21,12 @@ function PaymentContent() {
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [transactionId, setTransactionId] = useState('');
   const [errors, setErrors] = useState({
     cardNumber: false,
     expiryDate: false,
     cvv: false,
-    verification: false,
   });
 
   const fetchPaymentInfo = useCallback(async () => {
@@ -72,11 +69,6 @@ function PaymentContent() {
   // Allow only digits for CVV
   const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCvv(e.target.value.replace(/\D/g, ''));
-  };
-
-  // Allow only digits for verification code
-  const handleVerificationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVerificationCode(e.target.value.replace(/\D/g, ''));
   };
 
   // Luhn algorithm validation
@@ -135,42 +127,29 @@ function PaymentContent() {
   };
 
   // Handle payment button click
-  const handlePayment = () => {
+  const handlePayment = async () => {
     const newErrors = {
       cardNumber: !validateLuhn(cardNumber),
       expiryDate: !validateExpiryDate(expiryDate),
       cvv: !validateCVV(cvv),
-      verification: false,
     };
 
     setErrors(newErrors);
 
     if (!newErrors.cardNumber && !newErrors.expiryDate && !newErrors.cvv) {
-      setShowModal(true);
-      setVerificationCode('');
-    }
-  };
-
-  // Handle verification confirmation
-  const handleVerification = async () => {
-    if (verificationCode.length !== 6) {
-      setErrors({ ...errors, verification: true });
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/complete-payment?paymentId=${paymentId}`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setTransactionId(data.paymentId);
-        setShowModal(false);
-        setShowSuccess(true);
+      try {
+        const response = await fetch(`/api/complete-payment?paymentId=${paymentId}`, {
+          method: 'POST',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setTransactionId(data.paymentId);
+          setShowSuccess(true);
+        }
+      } catch (error) {
+        console.error('Payment failed:', error);
       }
-    } catch (error) {
-      console.error('Payment failed:', error);
     }
   };
 
@@ -291,43 +270,6 @@ function PaymentContent() {
         </div>
       )}
 
-      {/* 3D Secure Modal */}
-      {showModal && (
-        <div
-          className={styles.modalOverlay}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowModal(false);
-            }
-          }}
-        >
-          <div className={styles.modal}>
-            <div className={styles.bankLogo}>NB</div>
-            <h2>NovaBank Secure Verification</h2>
-            <p>Enter the 6-digit verification code</p>
-
-            <div className={styles.formGroup}>
-              <input
-                type="text"
-                id="verificationCode"
-                className={styles.verificationInput}
-                placeholder="000000"
-                maxLength={6}
-                autoComplete="off"
-                value={verificationCode}
-                onChange={handleVerificationChange}
-              />
-              {errors.verification && (
-                <div className={styles.errorMessage}>Please enter 6 digits</div>
-              )}
-            </div>
-
-            <button className={styles.confirmButton} onClick={handleVerification}>
-              Confirm
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

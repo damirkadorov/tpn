@@ -73,7 +73,6 @@ curl -X POST https://your-app.vercel.app/api/payment-gateway/payments \
 ### User Experience
 - ✅ Customer checkout page
 - ✅ Card validation (Luhn algorithm)
-- ✅ 3D Secure simulation
 - ✅ Detailed error messages
 - ✅ Success/failure handling
 
