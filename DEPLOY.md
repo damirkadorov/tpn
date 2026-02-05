@@ -93,14 +93,15 @@ vercel dev
 
 | Variable | Description | Required | Example |
 |----------|-------------|----------|---------|
-| `API_KEYS` | Comma-separated list of valid API keys | Yes (for production) | `key1,key2,key3` |
-| `WEBHOOK_SECRET` | Secret for signing webhooks | No | `your_secret_here` |
+| `API_KEYS` | Comma-separated list of valid API keys | Yes | `key1,key2,key3` |
+| `NODE_ENV` | Environment mode (set by Vercel) | No | `production` |
 
 **Security Notes:**
 - Never commit `.env` file to Git (already in `.gitignore`)
 - Use strong, random API keys in production
 - Rotate API keys periodically
-- If `API_KEYS` is not set, the API accepts any key (development only)
+- In production, missing `API_KEYS` will cause authentication to fail
+- In development, missing `API_KEYS` will show a warning but allow any key
 
 ## Project Structure
 

@@ -33,13 +33,9 @@ cp .env.example .env
   
 **Optional Environment Variables:**
 
-- `WEBHOOK_SECRET` - Secret for signing webhook payloads (future enhancement)
+- `NODE_ENV` - Set to 'production' for production environment (Vercel sets this automatically)
 
-**For Vercel deployment**, add environment variables via:
-- Vercel Dashboard → Project Settings → Environment Variables
-- Or use Vercel CLI: `vercel env add API_KEYS`
-
-**Note:** If `API_KEYS` is not set, the API will accept any API key (for demo/development only).
+**Note:** If `API_KEYS` is not set in development, the API will accept any API key with a warning. In production, missing `API_KEYS` will result in an error.
 
 ## 📚 Quick Start Guide
 

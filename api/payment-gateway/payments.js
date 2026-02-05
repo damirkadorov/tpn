@@ -23,8 +23,12 @@ const authenticateApiKey = (req) => {
   // Get valid API keys from environment variables
   const validApiKeys = process.env.API_KEYS?.split(',').map(key => key.trim()) || [];
   
-  // If no API keys configured in environment, accept any for demo/development
+  // In production, API keys must be configured
   if (validApiKeys.length === 0) {
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+      return { error: 'API key configuration missing. Contact system administrator.', status: 500 };
+    }
+    // Development mode: accept any API key with warning
     console.warn('Warning: No API_KEYS configured in environment variables. Accepting any API key for demo purposes.');
     return null;
   }
