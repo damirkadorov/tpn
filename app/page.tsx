@@ -21,8 +21,8 @@ export default function Home() {
   // Format card number with spaces
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\s/g, '');
-    let matches = value.match(/\d{1,4}/g);
-    let formattedValue = matches ? matches.join(' ') : value;
+    const matches = value.match(/\d{1,4}/g);
+    const formattedValue = matches ? matches.join(' ') : value;
     setCardNumber(formattedValue);
   };
 

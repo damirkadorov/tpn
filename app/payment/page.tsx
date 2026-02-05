@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './payment.module.css';
 
@@ -32,13 +32,7 @@ function PaymentContent() {
     verification: false,
   });
 
-  useEffect(() => {
-    if (paymentId) {
-      fetchPaymentInfo();
-    }
-  }, [paymentId]);
-
-  const fetchPaymentInfo = async () => {
+  const fetchPaymentInfo = useCallback(async () => {
     try {
       const response = await fetch(`/api/payment-info?paymentId=${paymentId}`);
       if (response.ok) {
@@ -50,13 +44,19 @@ function PaymentContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [paymentId]);
+
+  useEffect(() => {
+    if (paymentId) {
+      fetchPaymentInfo();
+    }
+  }, [paymentId, fetchPaymentInfo]);
 
   // Format card number with spaces
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\s/g, '');
-    let matches = value.match(/\d{1,4}/g);
-    let formattedValue = matches ? matches.join(' ') : value;
+    const matches = value.match(/\d{1,4}/g);
+    const formattedValue = matches ? matches.join(' ') : value;
     setCardNumber(formattedValue);
   };
 
