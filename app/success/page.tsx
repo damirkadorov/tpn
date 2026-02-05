@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import styles from './success.module.css';
 
 function SuccessContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const paymentId = searchParams?.get('paymentId');
   const [countdown, setCountdown] = useState(10);
 
@@ -14,7 +15,7 @@ function SuccessContent() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          window.location.href = '/';
+          router.push('/');
           return 0;
         }
         return prev - 1;
@@ -22,7 +23,7 @@ function SuccessContent() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [router]);
 
   return (
     <div className={styles.container}>
@@ -46,7 +47,7 @@ function SuccessContent() {
 
         <button 
           className={styles.homeButton}
-          onClick={() => window.location.href = '/'}
+          onClick={() => router.push('/')}
         >
           Return to Home
         </button>

@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
       receivedEvent: payload.event,
       paymentId: payload.paymentId
     }, { headers: corsHeaders });
-  } catch {
+  } catch (error) {
+    console.error('Webhook processing error:', error);
     return NextResponse.json({
       success: false,
       error: 'Invalid webhook payload'

@@ -54,8 +54,12 @@ export default function Home() {
     try {
       const orderId = generateOrderId();
       
-      // Use environment variable for API key, fallback to demo key for local development
-      const apiKey = process.env.NEXT_PUBLIC_PAYMENT_API_KEY || 'pk_0a1092c08019e9c8bcfb566d078e8751b6de39dcd3afe943488323b407a6488d';
+      // Get API key from environment variable (required for production)
+      const apiKey = process.env.NEXT_PUBLIC_PAYMENT_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error('Payment API key is not configured. Please set NEXT_PUBLIC_PAYMENT_API_KEY environment variable.');
+      }
       
       const response = await fetch('/api/payment-gateway/payments', {
         method: 'POST',

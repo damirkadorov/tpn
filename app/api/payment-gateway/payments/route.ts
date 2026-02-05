@@ -55,17 +55,20 @@ const authenticateApiKey = (request: NextRequest): { error: string; status: numb
   // Get valid API keys from environment variables
   const validApiKeys = process.env.API_KEYS?.split(',').map(key => key.trim()) || [];
   
-  // In production, API keys must be configured
+  // In production or on Vercel, API keys must be configured
   if (validApiKeys.length === 0) {
-    // Only allow bypass in local development (not on Vercel)
-    const isLocalDev = process.env.NODE_ENV === 'development' && !process.env.VERCEL;
+    // Only allow bypass in local development environment
+    // Check explicitly for local development: NODE_ENV must be 'development' AND not running on Vercel
+    const isLocalDev = process.env.NODE_ENV === 'development' 
+      && !process.env.VERCEL 
+      && !process.env.VERCEL_ENV;
     
     if (!isLocalDev) {
-      return { error: 'API key configuration missing. Contact system administrator.', status: 500 };
+      return { error: 'API key configuration missing. Please set API_KEYS environment variable.', status: 500 };
     }
     
-    // Local development mode: accept any API key with warning
-    console.warn('Warning: No API_KEYS configured. Accepting any API key for local development only.');
+    // Local development only: accept any API key with warning
+    console.warn('[DEV ONLY] No API_KEYS configured. Accepting any API key for local development.');
     return null;
   }
   

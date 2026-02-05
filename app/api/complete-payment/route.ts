@@ -69,6 +69,11 @@ export async function POST(request: NextRequest) {
   payments.set(paymentId, payment);
 
   // Send webhook notification (if webhookUrl provided)
+  // Note: This is a simplified implementation. In production, implement:
+  // - Retry logic with exponential backoff for failed deliveries
+  // - Webhook signature verification (HMAC)
+  // - Delivery status tracking and queuing
+  // - Dead letter queue for permanently failed webhooks
   if (payment.webhookUrl) {
     const webhookPayload: WebhookPayload = {
       event: 'payment.completed',
@@ -79,22 +84,18 @@ export async function POST(request: NextRequest) {
       timestamp: payment.completedAt
     };
     
-    // Attempt to send webhook (fire and forget, don't block the response)
-    try {
-      fetch(payment.webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(webhookPayload),
-      }).catch((error) => {
-        // Log error but don't fail the payment completion
-        console.error('Webhook delivery failed:', error);
-      });
-    } catch (error) {
+    // Fire-and-forget webhook delivery (don't block the response)
+    fetch(payment.webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(webhookPayload),
+    }).catch((error) => {
       // Log error but don't fail the payment completion
-      console.error('Webhook delivery error:', error);
-    }
+      // In production, queue for retry
+      console.error('Webhook delivery failed:', error);
+    });
   }
 
   return NextResponse.json({
